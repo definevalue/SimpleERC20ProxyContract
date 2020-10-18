@@ -4,7 +4,7 @@ pragma solidity ^0.5.0;
 contract Storage {
     uint public val;
     
-   address public implementation;   
+    address public implementation;   
     address public owner;
     mapping (address => uint) internal points;
     uint internal totalPlayers;
