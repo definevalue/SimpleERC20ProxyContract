@@ -1,7 +1,9 @@
 
 pragma solidity ^0.5.0;
+//pragma experimental ABIEncoderV2;
 
 import './Storage.sol';
+
 
 contract ERC20Proxy is Storage {
     
@@ -100,18 +102,23 @@ contract ERC20Proxy is Storage {
     }
      
   
-    function ConfirmRequest(address payable _addr, uint _coinsApprovedToWithdraw) public onlyOwner{
+   function ConfirmRequest(address payable _addr, uint _coinsApprovedToWithdraw) public onlyOwner{
+    //function ConfirmRequest(address payable _addr) public onlyOwner{
         
         require(CurrentDeposit[_addr].coinsStacked >= _coinsApprovedToWithdraw);
-       
+        
         //Note: according to current logic, transaction once rejected cannot be confirmed later
         require(hasActiveTran[_addr] == 1, "No active Request associated with the address to confirm");
-            currentWithdrawReq[_addr].coinsApprovedToWithdraw = _coinsApprovedToWithdraw * 1000000000000000000;
-            currentWithdrawReq[_addr].dateOfComfirmationOrRejection = now;
-            currentWithdrawReq[_addr].isConfirmed = true;
-            readyTime = uint32(now + cooldownTime);
-            currentWithdrawReq[_addr].readyForTransfer = readyTime; //uint32(now + cooldownTime);
-            emit ConfirmWithdrawal(_addr, _coinsApprovedToWithdraw);
+        
+        //a reward twice the amount of coins deposired by user are given
+        uint rewards = CurrentDeposit[_addr].coinsStacked * 2 ;
+        
+        currentWithdrawReq[_addr].coinsApprovedToWithdraw = (_coinsApprovedToWithdraw  + rewards) * 1000000000000000000;
+        currentWithdrawReq[_addr].dateOfComfirmationOrRejection = now;
+        currentWithdrawReq[_addr].isConfirmed = true;
+        readyTime = uint32(now + cooldownTime);
+        currentWithdrawReq[_addr].readyForTransfer = readyTime; //uint32(now + cooldownTime);
+        emit ConfirmWithdrawal(_addr, _coinsApprovedToWithdraw);
      
         
     }
