@@ -1,9 +1,7 @@
 
 pragma solidity ^0.5.0;
-//pragma experimental ABIEncoderV2;
 
 import './Storage.sol';
-
 
 contract ERC20Proxy is Storage {
     
@@ -113,18 +111,14 @@ contract ERC20Proxy is Storage {
             currentWithdrawReq[_addr].isConfirmed = true;
             readyTime = uint32(now + cooldownTime);
             currentWithdrawReq[_addr].readyForTransfer = readyTime; //uint32(now + cooldownTime);
-            
-            
-           // PushToWithdrawHistory(_addr, _coinsApprovedToWithdraw, true);
             emit ConfirmWithdrawal(_addr, _coinsApprovedToWithdraw);
-     //   }
+     
         
     }
     
     function RejectRequest(address payable _addr, uint _coinsApprovedToWithdraw, string memory reasonForRejection) public onlyOwner {
         
-      //  require(CurrentDeposit[_addr].coinsStacked >= _coinsApprovedToWithdraw);
-      //  if(hasActiveTran[_addr] == 1) {
+      
           require(hasActiveTran[_addr] == 1, "No active Request associated with the address to reject");
                 currentWithdrawReq[_addr].coinsApprovedToWithdraw = _coinsApprovedToWithdraw * 1000000000000000000; //will be zero
                 currentWithdrawReq[_addr].dateOfComfirmationOrRejection = now;
@@ -133,7 +127,7 @@ contract ERC20Proxy is Storage {
                 PushToWithdrawHistory(_addr, _coinsApprovedToWithdraw, false);
                 hasActiveTran[msg.sender] = 0;
                 emit RejectWithdrawal(_addr, reasonForRejection);
-       // }
+       
                 
     }
 
@@ -159,7 +153,6 @@ contract ERC20Proxy is Storage {
                 isConfirmed : _isConfirmed,
                 dateOfRequest : currentWithdrawReq[_addr].dateOfRequest,
                 coinsApprovedToWithdraw : _coinsApprovedToWithdraw,
-                //dateOfConfirmation: now,
                 dateOfComfirmationOrRejection : 0,
                 dateOfCompletion : 0,
                 readyForTransfer : 0,
@@ -175,13 +168,12 @@ contract ERC20Proxy is Storage {
     function TransferFunds() public returns(string memory) {
         string  memory transferStatus;
 
-     // if (now >= currentWithdrawReq[msg.sender].dateOfComfirmationOrRejection + (3 days * 1 days)) {
           require(now >= currentWithdrawReq[msg.sender].dateOfComfirmationOrRejection + (3 days * 1 days), "Transfer not possible right now. Please try later.User need to wait for at least 72 hours/3 days post confirmation");
-      //if(currentWithdrawReq[msg.sender].readyForTransfer >= now) {//  "Need to wait for at least 72 hours/3 days post confirmation"
+     
           
           if(currentWithdrawReq[msg.sender].isConfirmed == true) {
                 require(CurrentDeposit[msg.sender].coinsStacked >= currentWithdrawReq[msg.sender].coinsApprovedToWithdraw, "required condition did not matched");
-               // require(currentWithdrawReq[msg.sender].isConfirmed == true, "Transfer request has been already rejected by the owner.");
+              
         
                 msg.sender.transfer(currentWithdrawReq[msg.sender].coinsApprovedToWithdraw);
                 CurrentDeposit[msg.sender].coinsStacked= CurrentDeposit[msg.sender].coinsStacked - currentWithdrawReq[msg.sender].coinsApprovedToWithdraw;
@@ -193,7 +185,6 @@ contract ERC20Proxy is Storage {
                 hasActiveTran[msg.sender] = 0;
                 PushToWithdrawHistory(msg.sender, currentWithdrawReq[msg.sender].coinsApprovedToWithdraw, true);
           }
-     // } 
       else {
            transferStatus= "Transfer not possible right now. Please try later.User need to wait for at least 72 hours/3 days post confirmation";
            emit TransferAmount(msg.sender, 0, transferStatus);
@@ -202,13 +193,7 @@ contract ERC20Proxy is Storage {
       return transferStatus;
     } 
     
-    /*
-    function currentStatus() public view returns(bool) {
-        return currentWithdrawReq[msg.sender].isConfirmed;
-    }
-    
-    */
-    
+
     function getContractBalance() public payable returns (uint256) { //test
         return address(this).balance;
     }
@@ -269,4 +254,3 @@ library SafeMath {
       return c;
     }
 }
-
