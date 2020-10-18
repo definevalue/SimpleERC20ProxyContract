@@ -18,12 +18,6 @@ contract Registry is Storage, Ownable {
    
     }
     
-    /*
-    modifier onlyOwner() {
-        require(msg.sender == ownerAddr);
-        _;
-  }
-  */
 
 
     // fall back function
